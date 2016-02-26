@@ -11,15 +11,17 @@ abstract class ContactFactory
     {
         $client = GoogleHelper::getClient();
 
-        $req = new \Google_Http_Request('https://www.google.com/m8/feeds/contacts/default/full?max-results=10000&updated-min=2007-03-16T00:00:00');
+        $httpClient = $client->authorize();
 
-        $val = $client->getAuth()->authenticatedRequest($req);
+        $req = new \GuzzleHttp\Psr7\Request('GET', 'https://www.google.com/m8/feeds/contacts/default/full?max-results=10000&updated-min=2007-03-16T00:00:00');
 
-        $response = $val->getResponseBody();
+        $val = $httpClient->send($req);
+        $response = $val->getBody();
 
         $xmlContacts = simplexml_load_string($response);
         $xmlContacts->registerXPathNamespace('gd', 'http://schemas.google.com/g/2005');
 
+        $contactsArray=array();
         foreach ($xmlContacts->entry as $xmlContactsEntry) {
             $contactDetails = array();
 
